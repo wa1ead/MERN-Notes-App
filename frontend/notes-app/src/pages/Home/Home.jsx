@@ -49,7 +49,17 @@ const Home = () => {
         contentLabel=""
         className="w-[48%] max-h-3/4 bg-white mx-auto mt-14 p-5 overfolw-scroll rounded-md"
       >
-        <AddEditNotes />
+        <AddEditNotes
+          type={openAddEditModal.type}
+          noteData={openAddEditModal.data}
+          onClose={() => {
+            setOpenAddEditModal({
+              isShown: false,
+              type: "add",
+              data: null,
+            });
+          }}
+        />
       </Modal>
     </>
   );
