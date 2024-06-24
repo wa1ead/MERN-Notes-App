@@ -176,6 +176,25 @@ app.put("/edit-post/:noteId", authenticateToken, async (req, res) => {
 });
 
 //GET NOTES
+app.get("/get-notes", authenticateToken, async (req, res) => {
+  const { user } = req.user;
+
+  try {
+    const notes = Note.find({ userId: user._id }).sort({ isPinned: -1 });
+
+    return res
+      .status(400)
+      .json({
+        error: false,
+        message: "All notes retrieved successfully",
+        notes,
+      });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal Server Error!" });
+  }
+});
 
 app.listen(8000);
 
