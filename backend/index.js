@@ -67,7 +67,7 @@ app.post("/create-account", async (req, res) => {
     error: false,
     user,
     accessToken,
-    message: "Registration successful!",
+    message: "Registration successful",
   });
 });
 
@@ -86,7 +86,7 @@ app.post("/login", async (req, res) => {
   const userInfo = await User.findOne({ email: email });
 
   if (!userInfo) {
-    return res.status(400).json({ message: "User not found" });
+    return res.status(400).json({ message: "User not found!" });
   }
 
   if (userInfo.email == email && userInfo.password == password) {
@@ -97,12 +97,12 @@ app.post("/login", async (req, res) => {
 
     return res.json({
       error: false,
-      message: "Login successful!",
+      message: "Login successful",
       email,
       accessToken,
     });
   } else {
-    return res.json({ error: true, message: "Invalid Cardentials" });
+    return res.json({ error: true, message: "Invalid Cardentials!" });
   }
 });
 
@@ -131,13 +131,51 @@ app.post("/add-note", authenticateToken, async (req, res) => {
     await note.save();
     return res
       .status(400)
-      .json({ error: false, message: "Note created successfully!", note });
+      .json({ error: false, message: "Note created successfully", note });
   } catch (error) {
     return res
       .status(500)
-      .json({ error: true, message: "Internal Server Error" });
+      .json({ error: true, message: "Internal Server Error!" });
   }
 });
+
+//EDIT NOTE
+app.put("/edit-post/:noteId", authenticateToken, async (req, res) => {
+  const { noteId } = req.params.noteId;
+  const { title, content, tags, isPinned } = req.body;
+  const { user } = req.user;
+
+  if (!title && !content && !tags) {
+    return res
+      .status(400)
+      .json({ error: true, message: "No changes provided!" });
+  }
+  try {
+    const note = await Note.findOne({ _id: noteId, userId: user._id });
+    if (!note) {
+      return res.status(400).json({ error: true, message: "Note not found!" });
+    }
+
+    if (title) note.title = title;
+    if (content) note.content = content;
+    if (tags) note.tags = tags;
+    if (isPinned) note.isPinned = isPinned;
+
+    await note.save();
+
+    return res.json({
+      error: false,
+      message: "Note updated successfully",
+      note,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal Server Error!" });
+  }
+});
+
+//GET NOTES
 
 app.listen(8000);
 
