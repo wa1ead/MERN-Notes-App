@@ -106,6 +106,27 @@ app.post("/login", async (req, res) => {
   }
 });
 
+//GET USER
+app.get("/get-user", authenticateToken, async (req, res) => {
+  const { user } = req.user;
+
+  const isUser = await User.findOne({ _id: user._id });
+
+  if (!isUser) {
+    return res.sendStatus(401);
+  }
+
+  return res.json({
+    user: {
+      fullName: isUser.fullName,
+      email: isUser.email,
+      _id: isUser._id,
+      createdOn: isUser.createdOn,
+    },
+    message: "",
+  });
+});
+
 //ADD NOTE
 app.post("/add-note", authenticateToken, async (req, res) => {
   const { title, content, tags } = req.body;
@@ -233,13 +254,11 @@ app.put("/update-note-pin/:noteId", authenticateToken, async (req, res) => {
 
     await note.save();
 
-    return res
-      .status(400)
-      .json({
-        error: false,
-        message: "Note pinned/unpinned successfully",
-        note,
-      });
+    return res.status(400).json({
+      error: false,
+      message: "Note pinned/unpinned successfully",
+      note,
+    });
   } catch (error) {
     return res
       .status(500)
