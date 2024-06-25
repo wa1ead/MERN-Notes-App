@@ -140,7 +140,7 @@ app.post("/add-note", authenticateToken, async (req, res) => {
 });
 
 //EDIT NOTE
-app.put("/edit-post/:noteId", authenticateToken, async (req, res) => {
+app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
   const { noteId } = req.params.noteId;
   const { title, content, tags, isPinned } = req.body;
   const { user } = req.user;
@@ -153,7 +153,7 @@ app.put("/edit-post/:noteId", authenticateToken, async (req, res) => {
   try {
     const note = await Note.findOne({ _id: noteId, userId: user._id });
     if (!note) {
-      return res.status(400).json({ error: true, message: "Note not found!" });
+      return res.status(404).json({ error: true, message: "Note not found!" });
     }
 
     if (title) note.title = title;
@@ -203,12 +203,43 @@ app.delete("/delete-note/:noteId", authenticateToken, async (req, res) => {
     const note = await Note.findOne({ _id: noteId, userId: user._id });
 
     if (!note)
-      return res.status(400).json({ error: true, message: "Note not found!" });
+      return res.status(404).json({ error: true, message: "Note not found!" });
 
     await Note.deleteOne({ _id: noteId, userId: user._id });
     return res
       .status(400)
       .json({ error: false, message: "Note deleted successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: true, message: "Internal Server Error!" });
+  }
+});
+
+//UPDATE isPinned VALUE
+app.put("/update-note-pin/:noteId", authenticateToken, async (req, res) => {
+  const noteId = req.params.noteId;
+  const { isPinned } = req.body;
+  const { user } = req.user;
+
+  try {
+    const note = new Note.findOne({ _id: noteId, userId: user._id });
+
+    if (!note) {
+      return res.status(404).json({ error: true, message: "Note not found!" });
+    }
+
+    if (isPinned) note.isPinned = isPinned || false;
+
+    await note.save();
+
+    return res
+      .status(400)
+      .json({
+        error: false,
+        message: "Note pinned/unpinned successfully",
+        note,
+      });
   } catch (error) {
     return res
       .status(500)
